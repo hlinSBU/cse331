@@ -35,8 +35,9 @@ def block_ip(ip):
     #print cmd
     subprocess.call(cmd,shell=True)
 
-def unblock_ip(ip)
-    
+def unblock_ip(ip):
+    cmd="iptables -D INPUT -s "+ip+" -j DROP"
+    subprocess.call(cmd,shell=True)
 
 
    
@@ -232,7 +233,7 @@ def convertTime(time):
     day = y[0]
 
     date = year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second
-    retuen date
+    return  date
     #print(date)
 
 def SSH_datetime(input):
