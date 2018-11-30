@@ -35,6 +35,10 @@ def block_ip(ip):
     #print cmd
     subprocess.call(cmd,shell=True)
 
+def unblock_ip(ip):
+    cmd="iptables -D INPUT -s "+ip+" -j DROP"
+    subprocess.call(cmd,shell=True)
+
 
    
         
