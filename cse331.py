@@ -3,6 +3,8 @@ import time
 from time import strftime
 import subprocess
 import json
+import datetime
+
 
 
 ##########READ PREPROCESSES FILE############
@@ -20,13 +22,14 @@ with open("/usr/share/modips/data/clientdata.json") as data_json_file:
     request_window = admindata['requestwindow']
     block_dur = admindata['blockduration']
     clientdata = data['clientdata']
+    clients = clientdata['clients']
     client_list = []
-    for c in clientdata.values():
-        client = Client()
-        client.ip_address = c['ipaddress']
-        client.first_login = c['firstlogin']
-        client.failed_requests = c['failedrequests']
-        client.time_blocked = c['timeblocked']
+    for c in clients:
+        clientIP = c['ipaddress']
+        client_first_login = c['firstlogin']
+        client_failed_requests = c['failedrequests']
+        client_time_blocked = c['timeblocked']
+        client = Client(clientIP, client_first_login, client_failed_requests, client_time_blocked)
         client_list.append(client)
 
 
