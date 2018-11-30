@@ -280,9 +280,10 @@ pareseSSHData(ssh_log_file, parse_ssh)
 #######################CHECK THROUGH THE LIST, SEE IF ANY CAN BE UNBLOCKED#######################
 if len(client_list) != 0:
     for c in client_list:
-        blocked = datetime.datetime.strptime(c.time_blocked, "%Y-%m-%d %H:%M:%S")
-        if datetime.now() >= blocked:
-            client_list.remove(c)
+        if c.time_blocked is not None:
+            blocked = datetime.datetime.strptime(c.time_blocked, "%Y-%m-%d %H:%M:%S")
+            if datetime.now() >= blocked:
+                client_list.remove(c)
 #print("current client list is: " + client_list)         
 
 
