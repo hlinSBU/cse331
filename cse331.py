@@ -36,11 +36,11 @@ with open("/usr/share/modips/data/clientdata.json") as data_json_file:
 def block_ip(ip):
     cmd="iptables -A INPUT -s "+ip+" -j DROP"
     #print cmd
-    subprocess.call(cmd,shell=True)
+    subprocess.call(cmd.split())
 
 def unblock_ip(ip):
     cmd="iptables -D INPUT -s "+ip+" -j DROP"
-    subprocess.call(cmd,shell=True)
+    subprocess.call(cmd.split())
 
 def checkMonth(Mon):
     if Mon == 'Jan':
