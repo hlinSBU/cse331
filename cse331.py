@@ -35,6 +35,9 @@ def block_ip(ip):
     #print cmd
     subprocess.call(cmd,shell=True)
 
+def unblock_ip(ip)
+    
+
 
    
         
@@ -87,6 +90,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                 for client in client_list:
                     if client.fail_requests >= request:
                         block_ip(client.ip_address)
+                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
                 # ip_dict(match_IP)
 
             for match in re.finditer(parse_jm, line, re.S):
@@ -113,6 +117,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                 for client in client_list:
                     if client.fail_requests >= request:
                         block_ip(client.ip_address)
+                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
                     #ip_dict(match_IP)
 
 
@@ -140,6 +145,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                 for client in client_list:
                     if client.fail_requests >= request:
                         block_ip(client.ip_address)
+                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
                     #ip_dict(match_IP)
     file.close()
 
@@ -175,6 +181,7 @@ def pareseSSHData(ssh_log_file, parse_ssh):
                 #print(client.fail_requests)
                 if client.fail_requests >= request:
                     block_ip(client.ip_address)
+                    client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
             #ip_dict(match_IP)
             #print match_list
 file.close()
