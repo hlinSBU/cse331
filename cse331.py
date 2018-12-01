@@ -44,6 +44,8 @@ def unblock_ip(ip):
     cmd="iptables -D INPUT -s "+ip+" -j DROP"
     subprocess.call(cmd.split())
 
+    
+
 def checkMonth(Mon):
     if Mon == 'Jan':
         return '1'
@@ -118,7 +120,7 @@ def SSH_datetime(input):
         month = '10'
     elif timeList[0] == 'Nov':
         month = '11'
-
+    timeList[1] = timeList[1].strip()
     result='2018-'+month+'-'+timeList[1]
     return result
 
@@ -141,7 +143,7 @@ parse_jm = '(GET \/index\.php\/component\/users\/\?view=login&Itemid=101)'
 parse_ssh = '(Invalid)'
 
 parse_time = '(\d{2}\/\w{3}\/\d{4}:\d{2}:\d{2}:\d{2})'
-parse_ssh_time = '(\w{3} \d{2} \d{2}:\d{2}:\d{2})'
+parse_ssh_time = '(\w{3}\s{1,3}\d{1,2}\s{1,3}\d{2}:\d{2}:\d{2})'
 
 
 def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
