@@ -301,6 +301,7 @@ for c in client_list:
         "firstlogin" : c.first_login,
         "failedrequests" : c.fail_requests,
         "timeblocked" : c.time_blocked
+        "removeblacklist": c.remove_blacklist
     }
     client.append(x)
     #y = json.dumps(x)
