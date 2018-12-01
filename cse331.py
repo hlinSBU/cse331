@@ -9,11 +9,12 @@ import datetime
 
 ##########READ PREPROCESSES FILE############
 class Client:
-    def __init__(self, ip_address, first_login, fail_requests, time_blocked):
+    def __init__(self, ip_address, first_login, fail_requests, time_blocked, remove_blacklist):
         self.ip_address = ip_address
         self.first_login = first_login
         self.fail_requests = fail_requests
         self.time_blocked = time_blocked
+        self.remove_blacklist = remove_blacklist
 
 with open("/usr/share/modips/data/clientdata.json") as data_json_file:
     data = json.load(data_json_file)
@@ -29,7 +30,8 @@ with open("/usr/share/modips/data/clientdata.json") as data_json_file:
         client_first_login = c['firstlogin']
         client_failed_requests = c['failedrequests']
         client_time_blocked = c['timeblocked']
-        client = Client(clientIP, client_first_login, client_failed_requests, client_time_blocked)
+        client_remove_blacklist = c['removeblacklist']
+        client = Client(clientIP, client_first_login, client_failed_requests, client_time_blocked, remove_blacklist)
         client_list.append(client)
 
 
@@ -162,7 +164,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                         client.fail_requests + 1
                         notin_flag = True
                 if notin_flag == False:
-                    newclient = Client(match_IP, time_tried, 1, None)
+                    newclient = Client(match_IP, time_tried, 1, None, False)
                     client_list.append(newclient)
                 notin_flag = False
 
@@ -190,7 +192,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                         client.fail_requests + 1
                         notin_flag = True
                 if notin_flag == False:
-                    newclient = Client(match_IP, time_tried, 1, None)
+                    newclient = Client(match_IP, time_tried, 1, None, False)
                     client_list.append(newclient)
                 notin_flag = False
 
@@ -219,7 +221,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                         client.fail_requests + 1
                         notin_flag = True
                 if notin_flag == False:
-                    newclient = Client(match_IP, time_tried, 1, None)
+                    newclient = Client(match_IP, time_tried, 1, None, False)
                     client_list.append(newclient)
                 notin_flag = False
 
@@ -255,7 +257,7 @@ def pareseSSHData(ssh_log_file, parse_ssh):
                     client.fail_requests + 1
                     notin_flag = True
             if notin_flag == False:
-                newclient = Client(match_IP, time_tried, 1, None)
+                newclient = Client(match_IP, time_tried, 1, None, False)
                 client_list.append(newclient)
             notin_flag = False
 
@@ -280,10 +282,14 @@ pareseSSHData(ssh_log_file, parse_ssh)
 #######################CHECK THROUGH THE LIST, SEE IF ANY CAN BE UNBLOCKED#######################
 if len(client_list) != 0:
     for c in client_list:
+        if c.remove_blacklist == True:
+            client_list.remove(c)
+            unblock_ip(c.ip_address)
         if c.time_blocked is not None:
             blocked = datetime.datetime.strptime(c.time_blocked, "%Y-%m-%d %H:%M:%S")
             if datetime.now() >= blocked:
                 client_list.remove(c)
+                unblock_ip(c.ip_address)
 #print("current client list is: " + client_list)         
 
 
