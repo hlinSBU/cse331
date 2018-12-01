@@ -289,8 +289,41 @@ if len(client_list) != 0:
 
 ############################WRITE TO JSON################################
 
+for c in client_list:
+    x = {
+        "ipaddress" : c.ip_address,
+        "firstlogin" : c.first_login,
+        "failedrequests" : c.fail_requests,
+        "timeblocked" : c.time_blocked
+    }
+    client.append(x)
+    #y = json.dumps(x)
+
+#print(client)
+
+client_dic = {"clients" : client}
+#print(client_dic)
+
+admin = {
+    "requestlimit" : request,
+    "requestwindow" : request_window,
+    "blockduration" : block_dur
+}
+
+info = {
+    "admindata" : admin,
+    "clientdata" : client_dic
+}
+
+#print(info)
+
+#info_json = json.dumps(info)
+
+#print(info_json)
+
+with open("/usr/share/modips/data/clientdata.json", "w") as outfile:
+    json.dump(info, outfile, indent = 4)
 
 
-
-
+outfile.close()
 data_json_file.close()
