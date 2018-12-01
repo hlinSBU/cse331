@@ -37,7 +37,6 @@ with open("/home/ubuntu/Documents/cse331/myapp/clientdata.json") as data_json_fi
 
 def block_ip(ip):
     cmd="iptables -A INPUT -s "+ip+" -j DROP"
-    #print cmd
     subprocess.call(cmd.split())
 
 def unblock_ip(ip):
@@ -287,9 +286,9 @@ if len(client_list) != 0:
         if c.remove_blacklist == True:
             client_list.remove(c)
             unblock_ip(c.ip_address)
-        if c.time_blocked is not None:
+        if c.time_blocked is not 'null':
             blocked = datetime.datetime.strptime(c.time_blocked, "%Y-%m-%d %H:%M:%S")
-            if datetime.now() >= blocked:
+            if datetime.datetime.now() >= blocked:
                 client_list.remove(c)
                 unblock_ip(c.ip_address)
 #print("current client list is: " + client_list)         
