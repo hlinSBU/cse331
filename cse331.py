@@ -166,9 +166,10 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
             time_tried = convertTime(time_tried)
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
             for client in client_list:
-                if client.ip_address == match_IP and time_tried != client.last_time_incr:
-                    client.fail_requests = client.fail_requests + 1
-                    client.last_time_incr = time_tried
+                if client.ip_address == match_IP:
+		    if time_tried > client.last_time_incr:
+                        client.fail_requests = client.fail_requests + 1
+                        client.last_time_incr = time_tried
                     notin_flag = True
             if notin_flag == False:
                 newclient = Client(match_IP, time_tried, 1, None, False, time_tried)
@@ -196,9 +197,10 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
             time_tried = convertTime(time_tried)
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
             for client in client_list:
-                if client.ip_address == match_IP and time_tried != client.last_time_incr:
-                    client.fail_requests = client.fail_requests + 1
-                    client.last_time_incr = time_tried
+                if client.ip_address == match_IP:
+		    if time_tried > client.last_time_incr:
+                        client.fail_requests = client.fail_requests + 1
+                        client.last_time_incr = time_tried
 		    notin_flag = True
             if notin_flag == False:
                 newclient = Client(match_IP, time_tried, 1, None, False, time_tried)
@@ -225,9 +227,10 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
             time_tried = convertTime(time_tried)
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
             for client in client_list:
-                if client.ip_address == match_IP and client.last_time_incr != time_tried:
-                    client.fail_requests = client.fail_requests + 1
-		    client.last_time_incr = time_tried
+                if client.ip_address == match_IP:
+		    if client.last_time_incr > time_tried:
+                        client.fail_requests = client.fail_requests + 1
+		        client.last_time_incr = time_tried
                     notin_flag = True
             if notin_flag == False:
                 newclient = Client(match_IP, time_tried, 1, None, False, time_tried)
@@ -262,9 +265,12 @@ def pareseSSHData(ssh_log_file, parse_ssh):
 	            
 	            ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
 	    for client in client_list:
-                if client.ip_address == match_IP and client.last_time_incr != time_tried:
-	            client.fail_requests = client.fail_requests + 1
-	            client.last_time_incr = time_tried
+                if client.ip_address == match_IP:
+	            print time_tried
+                    print client.last_time_incr
+		    if time_tried > client.last_time_incr:
+	                client.fail_requests = client.fail_requests + 1
+	                client.last_time_incr = time_tried
 		    notin_flag = True
 	    if notin_flag == False:
 	        newclient = Client(match_IP, time_tried, 1, None, False, time_tried)
