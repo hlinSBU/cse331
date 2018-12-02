@@ -175,7 +175,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                 ##### CALL BLCOK IP METHOD #####
                 for client in client_list:
                     if client.fail_requests >= request:
-                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
+                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=block_dur))
                         splite_last_dec = client.time_blocked.rpartition('.')
                         client.time_blocked = splite_last_dec[0]
                 # ip_dict(match_IP)
@@ -203,7 +203,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                     ##### CALL BLCOK IP METHOD #####
                 for client in client_list:
                     if client.fail_requests >= request:
-                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
+                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=block_dur))
                         splite_last_dec = client.time_blocked.rpartition('.')
                         client.time_blocked = splite_last_dec[0]
                     #ip_dict(match_IP)
@@ -232,7 +232,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                     ##### CALL BLCOK IP METHOD #####
                 for client in client_list:
                     if client.fail_requests >= request:
-                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
+                        client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=block_dur))
                         splite_last_dec = client.time_blocked.rpartition('.')
                         client.time_blocked = splite_last_dec[0]
                     #ip_dict(match_IP)
@@ -270,9 +270,9 @@ def pareseSSHData(ssh_log_file, parse_ssh):
 	    for client in client_list:
 	                #print(client.fail_requests)
 	        if client.fail_requests >= request:
-                    client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
+                client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=block_dur))
 	            splite_last_dec = client.time_blocked.rpartition('.')
-                    client.time_blocked = splite_last_dec[0]
+                client.time_blocked = splite_last_dec[0]
 	            #ip_dict(match_IP)
 	            #print match_list
 
@@ -284,14 +284,20 @@ pareseSSHData(ssh_log_file, parse_ssh)
 #######################CHECK THROUGH THE LIST, SEE IF ANY CAN BE UNBLOCKED#######################
 if len(client_list) != 0:
     for c in client_list:
+        blocked = datetime.datetime.strptime(c.time_blocked, "%Y-%m-%d %H:%M:%S")
+        firstlogintime = datetime.datetime.strptime(c.first_login, "%Y-%m-%d %H:%M:%S")
+        time_diff = datetime.datetime.now() - firstlogintime
+        time_diff_min = int(round(time_diff.total_seconds()/60))
         if c.remove_blacklist == True:
             client_list.remove(c)
             unblock_ip(c.ip_address)
         if c.time_blocked is not None and c.time_blocked != 'null':
-            blocked = datetime.datetime.strptime(c.time_blocked, "%Y-%m-%d %H:%M:%S")
+            
             if datetime.datetime.now() >= blocked:
                 client_list.remove(c)
                 unblock_ip(c.ip_address)
+        if time_diff_min >= request_window
+            client_list.remove(c)
 #print("current client list is: " + client_list)         
 
 
