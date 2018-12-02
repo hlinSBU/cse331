@@ -229,8 +229,6 @@ if len(client_list) != 0:
                 client_list.remove(c)
                 unblock_ip(c.ip_address)
         elif time_diff_min >= request_window and (c.time_blocked is None or c.time_blocked == 'null'):
-            print 'removing client with ip ='
-            print c.ip_address
             client_list.remove(c)
 
 
