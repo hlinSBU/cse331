@@ -150,8 +150,8 @@ parse_ssh_time = '(\w{3}\s{1,3}\d{1,2}\s{1,3}\d{2}:\d{2}:\d{2})'
 def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
     #match_list = []
     notin_flag = False
-    tail = subprocess.Popen(('tail', '--lines=25', ssh_log_file), stdout=subprocess.PIPE)
-    for line in tail.stdout:
+    with open(log_file_path, "r") as file:
+        for line in file:
             for match in re.finditer(parse_WP, line, re.S):
                 match_text = match.group()
                 # match_list.append(match_text)
@@ -164,7 +164,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
                 for client in client_list:
                     if client.ip_address == match_IP:
-                        client.fail_requests + 1
+                        client.fail_requests = client.fail_requests + 1
                         notin_flag = True
                 if notin_flag == False:
                     newclient = Client(match_IP, time_tried, 1, None, False)
@@ -192,7 +192,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
                 for client in client_list:
                     if client.ip_address == match_IP:
-                        client.fail_requests + 1
+                        client.fail_requests = client.fail_requests + 1
                         notin_flag = True
                 if notin_flag == False:
                     newclient = Client(match_IP, time_tried, 1, None, False)
@@ -221,7 +221,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
                 for client in client_list:
                     if client.ip_address == match_IP:
-                        client.fail_requests + 1
+                        client.fail_requests = client.fail_requests + 1
                         notin_flag = True
                 if notin_flag == False:
                     newclient = Client(match_IP, time_tried, 1, None, False)
@@ -236,6 +236,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                         splite_last_dec = client.time_blocked.rpartition('.')
                         client.time_blocked = splite_last_dec[0]
                     #ip_dict(match_IP)
+    file.close()
 
 def pareseSSHData(ssh_log_file, parse_ssh):
     #match_list = []
@@ -243,39 +244,39 @@ def pareseSSHData(ssh_log_file, parse_ssh):
     tail = subprocess.Popen(('tail', '--lines=25', ssh_log_file), stdout=subprocess.PIPE)
     for line in tail.stdout:
         print line
-        for match in re.finditer(parse_ssh, line, re.S):
-            match_text = match.group()
-            #match_list.append(match_text)
+	for match in re.finditer(parse_ssh, line, re.S):
+	    match_text = match.group()
+	    #match_list.append(match_text)
             search_IP = re.search(parse_IP, line, re.S)
-            match_IP = search_IP.group()
-                #print(match_IP)
-                ##### PARSE THE TIME######
-            search_time = re.search(parse_ssh_time, line, re.S)
+	    match_IP = search_IP.group()
+	        #print(match_IP)
+	        ##### PARSE THE TIME######
+	    search_time = re.search(parse_ssh_time, line, re.S)
             time_tried = search_time.group()
             time_tried = SSH_datetime(time_tried)
-                    #print(time_tried)
-                    ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
-            for client in client_list:
+	            #print(time_tried)
+	            ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
+	    for client in client_list:
                 if client.ip_address == match_IP:
-                    client.fail_requests + 1
-                    notin_flag = True
-            if notin_flag == False:
-                newclient = Client(match_IP, time_tried, 1, None, False)
-                client_list.append(newclient)
-            notin_flag = False
+	            client.fail_requests = client.fail_requests + 1
+	            notin_flag = True
+	    if notin_flag == False:
+	        newclient = Client(match_IP, time_tried, 1, None, False)
+	        client_list.append(newclient)
+	    notin_flag = False
 
-                    ##### IF THE NUMBERS OF REQUESTED IS OVER THE LIMITE #####
-                    ##### CALL BLOCK IP METHOD #####
-            for client in client_list:
-                        #print(client.fail_requests)
-                if client.fail_requests >= request:
+	            ##### IF THE NUMBERS OF REQUESTED IS OVER THE LIMITE #####
+	            ##### CALL BLOCK IP METHOD #####
+	    for client in client_list:
+	                #print(client.fail_requests)
+	        if client.fail_requests >= request:
                     client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
-                    splite_last_dec = client.time_blocked.rpartition('.')
+	            splite_last_dec = client.time_blocked.rpartition('.')
                     client.time_blocked = splite_last_dec[0]
-                    #ip_dict(match_IP)
-                    #print match_list
+	            #ip_dict(match_IP)
+	            #print match_list
 
-parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP)
+#parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP)
 pareseSSHData(ssh_log_file, parse_ssh)
 
 
