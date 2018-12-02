@@ -9,12 +9,13 @@ import datetime
 
 ##########READ PREPROCESSES FILE############
 class Client:
-    def __init__(self, ip_address, first_login, fail_requests, time_blocked, remove_blacklist):
+    def __init__(self, ip_address, first_login, fail_requests, time_blocked, remove_blacklist, last_time_incr):
         self.ip_address = ip_address
         self.first_login = first_login
         self.fail_requests = int(fail_requests)
         self.time_blocked = time_blocked
         self.remove_blacklist = remove_blacklist
+	self.last_time_incr = last_time_incr
 
 with open("/home/ubuntu/Documents/cse331/myapp/clientdata.json") as data_json_file:
     data = json.load(data_json_file)
@@ -31,12 +32,13 @@ with open("/home/ubuntu/Documents/cse331/myapp/clientdata.json") as data_json_fi
         client_failed_requests = c['failedrequests']
         client_time_blocked = c['timeblocked']
         client_remove_blacklist = c['removeblacklist']
-        client = Client(clientIP, client_first_login, client_failed_requests, client_time_blocked, client_remove_blacklist)
+	client_last_time_incr = c['lasttimeincr']
+        client = Client(clientIP, client_first_login, client_failed_requests, client_time_blocked, client_remove_blacklist, client_last_time_incr)
         client_list.append(client)
 
 
 def block_ip(ip):
-    cmd="sudo iptables -A INPUT -s "+ip+" -j DROP"
+    cmd="sudo iptables -I INPUT -s "+ip+" -j DROP"
     print cmd
     subprocess.call(cmd.split())
 
@@ -164,11 +166,12 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
             time_tried = convertTime(time_tried)
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
             for client in client_list:
-                if client.ip_address == match_IP:
+                if client.ip_address == match_IP and time_tried != client.last_time_incr:
                     client.fail_requests = client.fail_requests + 1
+                    client.last_time_incr = time_tried
                     notin_flag = True
             if notin_flag == False:
-                newclient = Client(match_IP, time_tried, 1, None, False)
+                newclient = Client(match_IP, time_tried, 1, None, False, time_tried)
                 client_list.append(newclient)
             notin_flag = False
 
@@ -179,6 +182,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                     client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=block_dur))
                     splite_last_dec = client.time_blocked.rpartition('.')
                     client.time_blocked = splite_last_dec[0]
+		    block_ip(client.ip_address)
                 # ip_dict(match_IP)
 
         for match in re.finditer(parse_jm, line, re.S):
@@ -192,11 +196,12 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
             time_tried = convertTime(time_tried)
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
             for client in client_list:
-                if client.ip_address == match_IP:
+                if client.ip_address == match_IP and time_tried != client.last_time_incr:
                     client.fail_requests = client.fail_requests + 1
-                    notin_flag = True
+                    client.last_time_incr = time_tried
+		    notin_flag = True
             if notin_flag == False:
-                newclient = Client(match_IP, time_tried, 1, None, False)
+                newclient = Client(match_IP, time_tried, 1, None, False, time_tried)
                 client_list.append(newclient)
             notin_flag = False
 
@@ -207,8 +212,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                     client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=block_dur))
                     splite_last_dec = client.time_blocked.rpartition('.')
                     client.time_blocked = splite_last_dec[0]
-                    #ip_dict(match_IP)
-
+                    block_ip(client.ip_address)
 
         for match in re.finditer(parse_php, line, re.S):
             match_text = match.group()
@@ -221,11 +225,12 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
             time_tried = convertTime(time_tried)
                 ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
             for client in client_list:
-                if client.ip_address == match_IP:
+                if client.ip_address == match_IP and client.last_time_incr != time_tried:
                     client.fail_requests = client.fail_requests + 1
+		    client.last_time_incr = time_tried
                     notin_flag = True
             if notin_flag == False:
-                newclient = Client(match_IP, time_tried, 1, None, False)
+                newclient = Client(match_IP, time_tried, 1, None, False, time_tried)
                 client_list.append(newclient)
             notin_flag = False
 
@@ -236,7 +241,7 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
                     client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=block_dur))
                     splite_last_dec = client.time_blocked.rpartition('.')
                     client.time_blocked = splite_last_dec[0]
-                    #ip_dict(match_IP)
+                    block_ip(client.ip_address)
 
 def pareseSSHData(ssh_log_file, parse_ssh):
     #match_list = []
@@ -246,37 +251,36 @@ def pareseSSHData(ssh_log_file, parse_ssh):
         #print line
 	for match in re.finditer(parse_ssh, line, re.S):
 	    match_text = match.group()
-	    #match_list.append(match_text)
+
             search_IP = re.search(parse_IP, line, re.S)
 	    match_IP = search_IP.group()
-	        #print(match_IP)
+	        
 	        ##### PARSE THE TIME######
 	    search_time = re.search(parse_ssh_time, line, re.S)
             time_tried = search_time.group()
             time_tried = SSH_datetime(time_tried)
-	            #print(time_tried)
+	            
 	            ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
 	    for client in client_list:
-                if client.ip_address == match_IP:
+                if client.ip_address == match_IP and client.last_time_incr != time_tried:
 	            client.fail_requests = client.fail_requests + 1
-	            notin_flag = True
+	            client.last_time_incr = time_tried
+		    notin_flag = True
 	    if notin_flag == False:
-	        newclient = Client(match_IP, time_tried, 1, None, False)
+	        newclient = Client(match_IP, time_tried, 1, None, False, time_tried)
 	        client_list.append(newclient)
 	    notin_flag = False
 
 	            ##### IF THE NUMBERS OF REQUESTED IS OVER THE LIMITE #####
 	            ##### CALL BLOCK IP METHOD #####
 	    for client in client_list:
-	                #print(client.fail_requests)
 	        if client.fail_requests >= request and (client.time_blocked is None or client.time_blocked == 'null'):
                     client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=block_dur))
 	            splite_last_dec = client.time_blocked.rpartition('.')
                     client.time_blocked = splite_last_dec[0]
-	            #ip_dict(match_IP)
-	            #print match_list
+	            block_ip(client.ip_address)
 
-#parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP)
+parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP)
 pareseSSHData(ssh_log_file, parse_ssh)
 
 
@@ -310,7 +314,8 @@ for c in client_list:
         "firstlogin" : c.first_login,
         "failedrequests" : c.fail_requests,
         "timeblocked" : c.time_blocked,
-        "removeblacklist": c.remove_blacklist
+        "removeblacklist": c.remove_blacklist,
+	"lasttimeincr": c.last_time_incr
     }
     client.append(x)
     #y = json.dumps(x)
