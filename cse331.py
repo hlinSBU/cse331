@@ -175,6 +175,7 @@ def parseLogData():
     parse_php = '(mysql-denied)'
     parse_jm = '(GET \/index\.php\/component\/users\/\?view=login&Itemid=101)'
     parse_ssh = '(Invalid)'
+    parse_modips = '(Bad login)'
 
     tail = subprocess.Popen(
         ('tail', '--lines=25', apache_log_file), stdout=subprocess.PIPE)
@@ -192,6 +193,11 @@ def parseLogData():
         jm_match = re.search(parse_jm, line, re.S)
         if jm_match is not None:
             match_dict[line] = 'apache'
+	    continue
+
+	modips_match = re.search(parse_modips, line, re.S)
+	if modips_match is not None:
+	    match_dict[line] = 'apache'
 
     tail = subprocess.Popen(
         ('tail', '--lines=25', ssh_log_file), stdout=subprocess.PIPE)
