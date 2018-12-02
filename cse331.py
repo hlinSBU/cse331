@@ -36,12 +36,13 @@ with open("/home/ubuntu/Documents/cse331/myapp/clientdata.json") as data_json_fi
 
 
 def block_ip(ip):
-    cmd="iptables -A INPUT -s "+ip+" -j DROP"
-    #print cmd
+    cmd="sudo iptables -A INPUT -s "+ip+" -j DROP"
+    print cmd
     subprocess.call(cmd.split())
 
 def unblock_ip(ip):
-    cmd="iptables -D INPUT -s "+ip+" -j DROP"
+    cmd="sudo iptables -D INPUT -s "+ip+" -j DROP"
+    print cmd
     subprocess.call(cmd.split())
 
     
@@ -240,41 +241,40 @@ def parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP):
 def pareseSSHData(ssh_log_file, parse_ssh):
     #match_list = []
     notin_flag = False
-    with open(ssh_log_file, "r") as file:
-	    for line in file:
-	        for match in re.finditer(parse_ssh, line, re.S):
-	            match_text = match.group()
-	            #match_list.append(match_text)
-	            search_IP = re.search(parse_IP, line, re.S)
-	            match_IP = search_IP.group()
-	            #print(match_IP)
-	            ##### PARSE THE TIME######
-	            search_time = re.search(parse_ssh_time, line, re.S)
-	            time_tried = search_time.group()
-	            time_tried = SSH_datetime(time_tried)
+    tail = subprocess.Popen(('tail', '--lines=25', ssh_log_file), stdout=subprocess.PIPE)
+    for line in tail.stdout:
+        print line
+	for match in re.finditer(parse_ssh, line, re.S):
+	    match_text = match.group()
+	    #match_list.append(match_text)
+            search_IP = re.search(parse_IP, line, re.S)
+	    match_IP = search_IP.group()
+	        #print(match_IP)
+	        ##### PARSE THE TIME######
+	    search_time = re.search(parse_ssh_time, line, re.S)
+            time_tried = search_time.group()
+            time_tried = SSH_datetime(time_tried)
 	            #print(time_tried)
 	            ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
-	            for client in client_list:
-	                if client.ip_address == match_IP:
-	                    client.fail_requests + 1
-	                    notin_flag = True
-	            if notin_flag == False:
-	                newclient = Client(match_IP, time_tried, 1, None, False)
-	                client_list.append(newclient)
-	            notin_flag = False
+	    for client in client_list:
+                if client.ip_address == match_IP:
+	            client.fail_requests + 1
+	            notin_flag = True
+	    if notin_flag == False:
+	        newclient = Client(match_IP, time_tried, 1, None, False)
+	        client_list.append(newclient)
+	    notin_flag = False
 
 	            ##### IF THE NUMBERS OF REQUESTED IS OVER THE LIMITE #####
 	            ##### CALL BLOCK IP METHOD #####
-	            for client in client_list:
+	    for client in client_list:
 	                #print(client.fail_requests)
-	                if client.fail_requests >= request:
-	                    client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
-	                    splite_last_dec = client.time_blocked.rpartition('.')
-	                    client.time_blocked = splite_last_dec[0]
+	        if client.fail_requests >= request:
+                    client.time_blocked = str(datetime.datetime.now() + datetime.timedelta(minutes=request_window))
+	            splite_last_dec = client.time_blocked.rpartition('.')
+                    client.time_blocked = splite_last_dec[0]
 	            #ip_dict(match_IP)
 	            #print match_list
-    file.close()
-
 
 #parseApacheData(log_file_path, parse_WP, parse_jm, parse_php, parse_IP)
 pareseSSHData(ssh_log_file, parse_ssh)
@@ -287,16 +287,16 @@ if len(client_list) != 0:
         if c.remove_blacklist == True:
             client_list.remove(c)
             unblock_ip(c.ip_address)
-        if c.time_blocked is not None:
+        if c.time_blocked is not None and c.time_blocked != 'null':
             blocked = datetime.datetime.strptime(c.time_blocked, "%Y-%m-%d %H:%M:%S")
-            if datetime.now() >= blocked:
+            if datetime.datetime.now() >= blocked:
                 client_list.remove(c)
                 unblock_ip(c.ip_address)
 #print("current client list is: " + client_list)         
 
 
 ############################WRITE TO JSON################################
-
+client = []
 for c in client_list:
     x = {
         "ipaddress" : c.ip_address,
@@ -330,7 +330,7 @@ info = {
 
 #print(info_json)
 
-with open("/usr/share/modips/data/clientdata.json", "w") as outfile:
+with open("/home/ubuntu/Documents/cse331/myapp/clientdata.json", "w") as outfile:
     json.dump(info, outfile, indent = 4)
 
 
