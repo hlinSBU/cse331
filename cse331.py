@@ -125,22 +125,26 @@ def SSH_datetime(input):
 
 ###########READ FILE############
 def parseMatches(match_dict):
-    parse_IP = r'(\d+\.\d+\.\d+\.\d+)'
-    parse_apache_time = r'(\d{2}\/\w{3}\/\d{4}:\d{2}:\d{2}:\d{2})'
-    parse_ssh_time = r'(\w{3}\s{1,3}\d{1,2}\s{1,3}\d{2}:\d{2}:\d{2})'
+    parse_IP = '(\d+\.\d+\.\d+\.\d+)'
+    parse_apache_time = '(\d{2}\/\w{3}\/\d{4}:\d{2}:\d{2}:\d{2})'
+    parse_ssh_time = '(\w{3}\s{1,3}\d{1,2}\s{1,3}\d{2}:\d{2}:\d{2})'
     notin_flag = False
 
     for line, log_type in match_dict.iteritems():
+	#print line
+	#print log_type
         search_IP = re.search(parse_IP, line, re.S)
         match_IP = search_IP.group()
 
         ##### PARSE THE TIME######
         if(log_type == 'apache'):
             search_time = re.search(parse_apache_time, line, re.S)
-        else:
+            time_tried = search_time.group()
+            time_tried = convertTime(time_tried)
+	else:
             search_time = re.search(parse_ssh_time, line, re.S)
-        time_tried = search_time.group()
-        time_tried = convertTime(time_tried)
+            time_tried = search_time.group()
+            time_tried = SSH_datetime(time_tried)
 
         ##### CHECK THE IP ADDRESS IN THE client_list IF IT EXISTS ######
         for client in client_list:
@@ -167,10 +171,10 @@ def parseLogData():
     apache_log_file = r"/var/log/apache2/access.log"  # webserver log
     ssh_log_file = r"/var/log/auth.log"  # SSH LOG
 
-    parse_wp = r'(\"POST\s.+200)'
-    parse_php = r'(mysql-denied)'
-    parse_jm = r'(GET \/index\.php\/component\/users\/\?view=login&Itemid=101)'
-    parse_ssh = r'(Invalid)'
+    parse_wp = '(\"POST\s.+200)'
+    parse_php = '(mysql-denied)'
+    parse_jm = '(GET \/index\.php\/component\/users\/\?view=login&Itemid=101)'
+    parse_ssh = '(Invalid)'
 
     tail = subprocess.Popen(
         ('tail', '--lines=25', apache_log_file), stdout=subprocess.PIPE)
