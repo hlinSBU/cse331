@@ -171,11 +171,12 @@ def parseLogData():
     apache_log_file = r"/var/log/apache2/access.log"  # webserver log
     ssh_log_file = r"/var/log/auth.log"  # SSH LOG
 
-    parse_wp = '(\"POST\s.+200)'
-    parse_php = '(mysql-denied)'
-    parse_jm = '(GET \/index\.php\/component\/users\/\?view=login&Itemid=101)'
-    parse_ssh = '(Invalid)'
-    parse_modips = '(Bad login)'
+    #parse_wp = '(\"POST\s.+200)'
+    parse_wp = '"POST \/wp-login.php HTTP\/1.1" 200'
+    parse_php = 'mysql-denied'
+    parse_jm = 'GET \/index\.php\/component\/users\/\?view=login&Itemid=101'
+    parse_ssh = 'Invalid'
+    parse_modips = 'Bad login'
 
     tail = subprocess.Popen(
         ('tail', '--lines=25', apache_log_file), stdout=subprocess.PIPE)
